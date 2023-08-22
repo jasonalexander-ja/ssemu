@@ -8,7 +8,7 @@ use baby_emulator::core::MEMORY_WORDS;
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    pub command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -50,6 +50,10 @@ pub struct Run {
     /// Output whole `model` including registers & memory when execution stops or breakpoint encountered. 
     #[arg(long, default_value_t = false)]
     pub output_model: bool,
+    
+    /// Go into a debug session when an error is encountered, as opposed to exiting. 
+    #[arg(long, default_value_t = false)]
+    pub debug_on_err: bool,
 
     /// Memory addresses to output when execution stops or breakpoint encountered. 
     #[arg(long, value_parser = parse_output_addresses)]
@@ -57,7 +61,7 @@ pub struct Run {
 
     /// Registers to output when execution stops or breakpoint encountered. 
     #[arg(long, value_enum)]
-    output_regs: Vec<Registers>,
+    pub output_regs: Vec<Registers>,
 
     /// Addresses where to break & output the state of the core. 
     #[arg(long, value_parser = parse_breakpoint_addresses)]
@@ -73,7 +77,7 @@ pub enum ExecuteFrom {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum Registers {
+pub enum Registers {
     /// The accumulator register. 
     Accumulator,
     /// The instruction register. 

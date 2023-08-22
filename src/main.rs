@@ -1,12 +1,19 @@
-use std::path::PathBuf;
-use clap::{Parser, Subcommand};
-use args::Cli;
+use clap::Parser;
+use args::{Commands, Cli};
+use run::execute;
 
-pub mod args;
+mod assemble;
+mod errors;
+mod args;
+mod run;
 
 
 fn main() {
     let cli = Cli::parse();
     
+    let res = match cli.command {
+        Commands::Run(v) => execute(v),
+        _ => Ok(())
+    };
     
 }
