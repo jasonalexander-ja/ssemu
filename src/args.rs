@@ -86,7 +86,30 @@ pub enum Registers {
     InstructionAddress,
 }
 
-fn parse_output_addresses(input: &str) -> Result<usize, String> {
+impl Registers {
+    pub fn parse_register(input: &str) -> Result<Registers, String> {
+        let input = input.to_lowercase();
+        let input = input.trim();
+        match input {
+            "accumulator" => Ok(Registers::Accumulator),
+            "instruction" => Ok(Registers::Instruction),
+            "instructionaddress" => Ok(Registers::InstructionAddress),
+            _ => Err(input.to_string())
+        }
+    }
+
+    pub fn parse_registers(input: &str) -> Result<Vec<Registers>, String> {
+        let mut res = vec![];
+        let regs: Vec<&str> = input.split(",").collect();
+        for reg in regs {
+            res.push(Self::parse_register(reg).map_err(|e| e)?);
+        }
+        Ok(res)
+    }
+
+}
+
+pub fn parse_output_addresses(input: &str) -> Result<usize, String> {
     let res = parse_memory_address(input)
         .map_err(|_| format!("Invalid value passed as output memory address `{input}`. "))?;
     if res > MEMORY_WORDS {

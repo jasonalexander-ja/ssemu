@@ -15,13 +15,13 @@ fn output_register(regs: &Registers, model: &BabyModel) {
     }
 }
 
-pub fn output_model(config: Run, model: BabyModel) {
-    if config.output_model {
+pub fn output_model(registers: &Vec<Registers>, memory_addrs: &Vec<usize>, output_model: bool, model: &BabyModel) {
+    if output_model {
         println!("{}", model.core_dump());
         return;
     }
-    config.output_regs.iter().for_each(|v| output_register(v, &model));
-    config.output_addr.iter().for_each(|v| 
+    registers.iter().for_each(|v| output_register(v, &model));
+    memory_addrs.iter().for_each(|v| 
         println!("{:#04x}: {:#010x}", v, model.main_store[v & 0x1F])
     );
 }
