@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::num::ParseIntError;
 use clap::{Parser, Subcommand, Args, ValueEnum};
 use baby_emulator::core::MEMORY_WORDS;
+use strum_macros::EnumIter;
 
 
 #[derive(Parser)]
@@ -76,7 +77,7 @@ pub enum ExecuteFrom {
     Bin,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, EnumIter)]
 pub enum Registers {
     /// The accumulator register. 
     Accumulator,
@@ -84,29 +85,6 @@ pub enum Registers {
     Instruction,
     /// The instruction address register. 
     InstructionAddress,
-}
-
-impl Registers {
-    pub fn parse_register(input: &str) -> Result<Registers, String> {
-        let input = input.to_lowercase();
-        let input = input.trim();
-        match input {
-            "accumulator" => Ok(Registers::Accumulator),
-            "instruction" => Ok(Registers::Instruction),
-            "instructionaddress" => Ok(Registers::InstructionAddress),
-            _ => Err(input.to_string())
-        }
-    }
-
-    pub fn parse_registers(input: &str) -> Result<Vec<Registers>, String> {
-        let mut res = vec![];
-        let regs: Vec<&str> = input.split(",").collect();
-        for reg in regs {
-            res.push(Self::parse_register(reg).map_err(|e| e)?);
-        }
-        Ok(res)
-    }
-
 }
 
 pub fn parse_output_addresses(input: &str) -> Result<usize, String> {

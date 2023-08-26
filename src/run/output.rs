@@ -1,4 +1,5 @@
-use baby_emulator::core::{BabyModel, instructions::BabyInstruction};
+use baby_emulator::core::{MEMORY_WORDS, BabyModel, instructions::BabyInstruction};
+use strum::IntoEnumIterator;
 use crate::args::{Run, Registers};
 
 
@@ -12,6 +13,18 @@ fn output_register(regs: &Registers, model: &BabyModel) {
                 model.instruction, 
                 BabyInstruction::from_number(model.instruction).get_instr_description()
             ),
+    }
+}
+
+pub fn output_all_registers(model: &BabyModel) {
+    for v in Registers::iter() {
+        output_register(&v, model);
+    }
+}
+
+pub fn output_all_memory(model: &BabyModel) {
+    for v in (0..MEMORY_WORDS) {
+        println!("{:#04x}: {:#010x}", v, model.main_store[v & 0x1F]);
     }
 }
 

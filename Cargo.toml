@@ -16,4 +16,6 @@ categories = ["emulators"]
 baby-emulator = "0.1.4"
 clap = { version = "4.3.23", features = ["derive"] }
 colored = "2.0.4"
+strum = "0.25.0"
+strum_macros = "0.25.2"
 
