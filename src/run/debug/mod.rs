@@ -14,7 +14,7 @@ pub fn check_debug_session(model: &BabyModel, conf: &Run) {
         output_model(&conf.output_regs, &conf.output_addr, conf.output_model, model);
         let mut line = String::new();
         let _ = io::stdin().read_line(&mut line);
-        match_debug_command(line, model);
+        match_debug_command(line, conf, model);
 
     }
 }

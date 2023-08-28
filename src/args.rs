@@ -77,7 +77,7 @@ pub enum ExecuteFrom {
     Bin,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, EnumIter)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum, EnumIter)]
 pub enum Registers {
     /// The accumulator register. 
     Accumulator,

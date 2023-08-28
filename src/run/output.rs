@@ -23,7 +23,7 @@ pub fn output_all_registers(model: &BabyModel) {
 }
 
 pub fn output_all_memory(model: &BabyModel) {
-    for v in (0..MEMORY_WORDS) {
+    for v in 0..MEMORY_WORDS {
         println!("{:#04x}: {:#010x}", v, model.main_store[v & 0x1F]);
     }
 }
