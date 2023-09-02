@@ -141,23 +141,39 @@ fn set_debug_regs(command: String, conf: &Run) -> Result<Run, String> {
     Ok(conf)
 }
 
-pub fn parse_set_command(command: String, conf: &Run, model: &BabyModel) -> Result<(BabyModel, Run), String> {
-    let command = command.trim();
+fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String> {
     let next_com = command.split(" ").next();
     let model = match &next_com {
         Some("reg") => set_register(command.replace("reg", ""), model).map_err(|e| e)?,
         Some("mem") => set_memory_address(command.replace("mem", ""), model).map_err(|e| e)?,
-        _ => model.clone()
+        _ => return Err(format!("No such option. "))
     };
-    let conf = match &next_com {
+    return Ok(model)
+}
+
+fn parse_set_config(command: &str, conf: &Run) -> Result<Run, String> {
+    let next_com = command.split(" ").next();
+    let model = match &next_com {
         Some("debug-addrs") => set_debug_address(command.replace("debug-addrs", ""), conf).map_err(|e| e)?,
         Some("break-addrs") => set_break_address(command.replace("break-addrs", ""), conf).map_err(|e| e)?,
         Some("debug-regs") => set_debug_regs(command.replace("debug-regs", ""), conf).map_err(|e| e)?,
-        Some("help") => {println!(""); conf.clone()},
+        Some("help") => { println!(""); conf.clone() },
         _ => return Err(format!("No recognised set command `{}`.", command))
     };
+    return Ok(model)
+}
 
-    Ok((model.clone(), conf.clone()))
+pub fn parse_set_command(command: String, conf: &Run, model: &BabyModel) -> Result<(BabyModel, Run), String> {
+    let command = command.trim();
+    match parse_set_model(command, model) {
+        Ok(m) => return Ok((m, conf.clone())),
+        Err(e) => e
+    };
+    match parse_set_config(command, conf) {
+        Ok(m) => return Ok((model.clone(), m.clone())),
+        Err(e) => e
+    };
+    return Err(format!("No such option as `{}`. ", command));
 }
 
 pub fn modify(command: String, conf: &Run, model: &BabyModel) -> (BabyModel, Run) {
