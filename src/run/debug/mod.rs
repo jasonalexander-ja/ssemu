@@ -6,6 +6,9 @@ use super::output::output_model;
 use debug_commands::match_debug_command;
 
 pub mod debug_commands;
+pub mod print_debug;
+pub mod utils;
+pub mod modify;
 
 
 pub fn check_debug_session(model: &BabyModel, conf: &Run) {

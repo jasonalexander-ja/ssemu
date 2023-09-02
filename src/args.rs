@@ -35,7 +35,7 @@ pub struct Assemble {
     pub og_notation: bool,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 pub struct Run {
     /// The source file to execute from. 
     pub src: PathBuf,
