@@ -1,4 +1,4 @@
-use baby_emulator::core::BabyModel;
+use baby_emulator::core::{BabyModel, instructions::BabyInstruction};
 use baby_emulator::core::errors::BabyErrors;
 use crate::args::Run;
 use super::ProgramStack;
@@ -13,12 +13,17 @@ fn iterate_model(model: &BabyModel) -> (BabyModel, Option<BabyErrors>) {
 
 pub fn run_model(conf: Run, stack: ProgramStack) {
     let model = BabyModel::new_with_program(stack);
+    let (mut model, mut conf) = (model.clone(), conf.clone());
     loop {
-        let (model, err_opt) = iterate_model(&model);
-        let has_hit_bp = conf.break_addr.contains(&(model.instruction_address as usize));
+        let (new_model, err_opt) = iterate_model(&model);
+        let has_hit_bp = conf.break_addr.contains(&(new_model.instruction_address as usize));
         let debug_on_err = conf.debug_on_err && err_opt.is_some();
-        if has_hit_bp || debug_on_err {
-            check_debug_session(&model, &conf);
+        (model, conf) = if has_hit_bp || debug_on_err {
+            check_debug_session(&new_model, &conf)
+        } else { (model, conf) };
+
+        if BabyInstruction::Stop == BabyInstruction::from_number(model.instruction) {
+            break;
         }
     }
 }

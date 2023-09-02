@@ -11,13 +11,17 @@ pub mod utils;
 pub mod modify;
 
 
-pub fn check_debug_session(model: &BabyModel, conf: &Run) {
+pub fn check_debug_session(model: &BabyModel, conf: &Run) -> (BabyModel, Run) {
+    let (mut model, mut conf) = (model.clone(), conf.clone());
     loop {
         println!("{}", "Debug".cyan());
-        output_model(&conf.output_regs, &conf.output_addr, conf.output_model, model);
+        output_model(&conf.output_regs, &conf.output_addr, conf.output_model, &model);
         let mut line = String::new();
         let _ = io::stdin().read_line(&mut line);
-        match_debug_command(line, conf, model);
+        if line.trim().starts_with("continue") { break; }
+        (model, conf) = match_debug_command(line, &conf, &model);
 
     }
+
+    (model, conf)
 }
