@@ -7,7 +7,9 @@ use super::modify::modify;
 
 const HELP: &str = 
 "Possible commands:
-print - Print the value of a register or memory location(s)  
+print - Print the value of a register or memory location(s). 
+set - Set a memory location, register, or set a breakpoint, or memorylocation/register to print on debug. 
+end - End execution. 
 help - Print this help command
 ";
 
