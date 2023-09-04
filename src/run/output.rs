@@ -1,6 +1,6 @@
 use baby_emulator::core::{MEMORY_WORDS, BabyModel, instructions::BabyInstruction};
 use strum::IntoEnumIterator;
-use crate::args::{Run, Registers};
+use crate::args::Registers;
 
 
 fn output_register(regs: &Registers, model: &BabyModel) {

@@ -1,6 +1,6 @@
 use baby_emulator::core::MEMORY_WORDS;
 use super::args::Run;
-use errors::RunError;
+use super::errors::Errors;
 use srcfile::get_src;
 use execution::run_model;
 
@@ -13,8 +13,8 @@ pub mod debug;
 
 pub type ProgramStack = [i32; MEMORY_WORDS];
 
-pub fn execute(args: Run) -> Result<(), RunError> {
-    let src = get_src(&args)?;
+pub fn execute(args: Run) -> Result<(), Errors> {
+    let src = get_src(&args).map_err(|e| Errors::RuntimeError(e))?;
     run_model(args, src);
 
     Ok(())

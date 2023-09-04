@@ -1,8 +1,8 @@
-use super::run::errors::RunError;
-use super::assemble::errors::AssembleError;
+use crate::run::errors::RunError;
+use crate::assemble::errors::AsmError;
 
 
 pub enum Errors {
-    RunError(RunError),
-    AssembleError(AssembleError)
+    RuntimeError(RunError),
+    AsmError(AsmError)
 }
