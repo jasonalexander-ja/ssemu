@@ -1,4 +1,5 @@
 use clap::Parser;
+use colored::Colorize;
 use args::{Commands, Cli};
 use run::execute;
 use assemble::assemble;
@@ -16,5 +17,13 @@ fn main() {
         Commands::Run(v) => execute(v),
         Commands::Assemble(a) => assemble(a),
     };
+
+    match res {
+        Ok(_) => println!("{}", "End. ".green()),
+        Err(e) => {
+            println!("{}", "Error. ".yellow());
+            println!("{}", e.describe());
+        },
+    }
     
 }

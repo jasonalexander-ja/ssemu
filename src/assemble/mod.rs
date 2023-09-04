@@ -5,22 +5,22 @@ use baby_emulator::core::instructions::BabyInstruction;
 use baby_emulator::core::MEMORY_WORDS;
 use crate::args::Assemble;
 use crate::errors::Errors;
-use errors::{AsmError, SrcFileError};
+use errors::{AsmErrors, SrcFileErrors};
 
 pub mod errors;
 
 
-fn get_src_from_asm(source: &PathBuf, og_notation: bool) -> Result<[i32; MEMORY_WORDS], AsmError> {
+fn get_src_from_asm(source: &PathBuf, og_notation: bool) -> Result<[i32; MEMORY_WORDS], AsmErrors> {
     let a = fs::read_to_string(source)
-        .map_err(|_| AsmError::SrcFileError(SrcFileError::CouldntOpenFile(source.clone())))?;
+        .map_err(|_| AsmErrors::SrcFileError(SrcFileErrors::CouldntOpenFile(source.clone())))?;
 
     let res = asm(&a, og_notation)
-        .map_err(|e| AsmError::AssembleError(e))?;
+        .map_err(|e| AsmErrors::AssembleError(e))?;
 
     Ok(BabyInstruction::to_numbers(res))
 }
 
-fn write_to_file(data: [i32; MEMORY_WORDS], conf: &Assemble) -> Result<(), AsmError> {
+fn write_to_file(data: [i32; MEMORY_WORDS], conf: &Assemble) -> Result<(), AsmErrors> {
     let out = match &conf.output {
         Some(v) => v.clone(),
         None => PathBuf::from(conf.input.to_string_lossy().to_string() + ".bin")
@@ -31,7 +31,7 @@ fn write_to_file(data: [i32; MEMORY_WORDS], conf: &Assemble) -> Result<(), AsmEr
     }).collect();
 
     fs::write(&out, &d)
-        .map_err(|_| AsmError::SrcFileError(SrcFileError::CouldNotWriteToFile(out.clone())))?;
+        .map_err(|_| AsmErrors::SrcFileError(SrcFileErrors::CouldNotWriteToFile(out.clone())))?;
 
     Ok(())
 }
