@@ -16,18 +16,18 @@ help - Print this help command
 pub fn match_debug_command(command: String, conf: &Run, model: &BabyModel) -> (BabyModel, Run) {
     let command = command.trim();
     match command.split(" ").next() {
-        Some("set") => modify(command.replace("set", ""), conf, model),
-        Some("print") => {
+        Some("s") | Some("set") => modify(command.replace("set", ""), conf, model),
+        Some("p") | Some("print") => {
             print(command.replace("print", ""), conf, model);
             (model.clone(), conf.clone())
         },
 
-        Some("") | Some("help") => {
+        Some("h") | Some("") | Some("help") => {
             println!("{}", HELP);
             (model.clone(), conf.clone())
         },
 
-        Some("end") => {
+        Some("e") | Some("end") => {
             let mut model = model.clone();
             model.instruction = BabyInstruction::Stop.to_number() as u16;
             (model, conf.clone())
