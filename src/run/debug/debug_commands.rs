@@ -24,7 +24,7 @@ pub fn match_debug_command(
     match command.split(" ").next() {
         Some("s") | Some("set") => modify(command.replace("set", ""), conf, model, int),
         Some("p") | Some("print") => {
-            print(command.replace("print", ""), conf, model);
+            print(command.replace("print", ""), conf, model, int);
             (model.clone(), conf.clone())
         },
 

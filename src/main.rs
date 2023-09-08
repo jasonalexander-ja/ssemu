@@ -1,6 +1,7 @@
 use clap::Parser;
 use colored::Colorize;
 use args::{Commands, Cli};
+use interface::Interface;
 use run::execute;
 use assemble::assemble;
 
@@ -17,14 +18,14 @@ fn main() {
     
     let res = match cli.command {
         Commands::Run(v) => execute(v, &int),
-        Commands::Assemble(a) => assemble(a, &int),
+        Commands::Assemble(a) => assemble(a),
     };
 
     match res {
-        Ok(_) => println!("{}", "End. ".green()),
+        Ok(_) => int.log_msg(format!("{}", "End. ".green())),
         Err(e) => {
-            println!("{}", "Error. ".yellow());
-            println!("{}", e.describe());
+            int.log_error("Error".to_owned());
+            int.log_warn(e.describe());
         },
     }
     

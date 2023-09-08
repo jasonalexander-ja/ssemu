@@ -1,4 +1,3 @@
-use std::io;
 use baby_emulator::core::BabyModel;
 use colored::Colorize;
 use crate::args::Run;
@@ -16,7 +15,7 @@ pub fn check_debug_session(model: &BabyModel, conf: &Run, int: &impl Interface) 
     let (mut model, mut conf) = (model.clone(), conf.clone());
     loop {
         int.log_msg(format!("{}", "Debug".cyan()));
-        output_model(&conf.output_regs, &conf.output_addr, conf.output_model, &model);
+        output_model(&conf.output_regs, &conf.output_addr, conf.output_model, &model, int);
         let line = int.get_line();
         if line.trim().starts_with("continue") { break; }
         (model, conf) = match_debug_command(line, &conf, &model, int);
