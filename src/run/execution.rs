@@ -1,6 +1,7 @@
 use baby_emulator::core::{BabyModel, instructions::BabyInstruction};
 use baby_emulator::core::errors::BabyErrors;
 use crate::args::Run;
+use crate::interface::Interface;
 use super::ProgramStack;
 use super::debug::check_debug_session;
 
@@ -17,13 +18,13 @@ fn should_debug(model: &BabyModel, conf: &Run, err_opt: Option<BabyErrors>) -> b
     has_hit_bp || debug_on_err
 }
 
-pub fn run_model(conf: Run, stack: ProgramStack) {
+pub fn run_model(conf: Run, stack: ProgramStack, interface: &impl Interface) {
     let model = BabyModel::new_with_program(stack);
     let (mut model, mut conf) = (model.clone(), conf.clone());
     loop {
         let (new_model, err_opt) = iterate_model(&model);
         (model, conf) = if should_debug(&new_model, &conf, err_opt) {
-            check_debug_session(&new_model, &conf)
+            check_debug_session(&new_model, &conf, interface)
         } else { (model, conf) };
 
         if BabyInstruction::Stop == BabyInstruction::from_number(model.instruction) {

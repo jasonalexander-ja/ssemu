@@ -3,6 +3,7 @@ use std::fs;
 use baby_emulator::assembler::assemble as asm;
 use baby_emulator::core::instructions::BabyInstruction;
 use baby_emulator::core::MEMORY_WORDS;
+use crate::interface::Interface;
 use crate::args::Assemble;
 use crate::errors::Errors;
 use errors::{AsmErrors, SrcFileErrors};
@@ -36,7 +37,7 @@ fn write_to_file(data: [i32; MEMORY_WORDS], conf: &Assemble) -> Result<(), AsmEr
     Ok(())
 }
 
-pub fn assemble(conf: Assemble) -> Result<(), Errors> {
+pub fn assemble(conf: Assemble, interface: &impl Interface) -> Result<(), Errors> {
     let bin = get_src_from_asm(&conf.input, conf.og_notation)
         .map_err(|e| Errors::AsmError(e))?;
 

@@ -6,16 +6,18 @@ use assemble::assemble;
 
 mod assemble;
 mod errors;
+mod interface;
 mod args;
 mod run;
 
 
 fn main() {
     let cli = Cli::parse();
+    let int = interface::CliInterface();
     
     let res = match cli.command {
-        Commands::Run(v) => execute(v),
-        Commands::Assemble(a) => assemble(a),
+        Commands::Run(v) => execute(v, &int),
+        Commands::Assemble(a) => assemble(a, &int),
     };
 
     match res {

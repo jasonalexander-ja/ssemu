@@ -1,6 +1,7 @@
 use baby_emulator::core::BabyModel;
 use baby_emulator::core::instructions::BabyInstruction;
 use crate::args::Run;
+use crate::interface::Interface;
 use super::print_debug::print;
 use super::modify::modify;
 
@@ -13,17 +14,22 @@ end - End execution.
 help - Print this help command
 ";
 
-pub fn match_debug_command(command: String, conf: &Run, model: &BabyModel) -> (BabyModel, Run) {
+pub fn match_debug_command(
+    command: String, 
+    conf: &Run, 
+    model: &BabyModel, 
+    int: &impl Interface
+) -> (BabyModel, Run) {
     let command = command.trim();
     match command.split(" ").next() {
-        Some("s") | Some("set") => modify(command.replace("set", ""), conf, model),
+        Some("s") | Some("set") => modify(command.replace("set", ""), conf, model, int),
         Some("p") | Some("print") => {
             print(command.replace("print", ""), conf, model);
             (model.clone(), conf.clone())
         },
 
         Some("h") | Some("") | Some("help") => {
-            println!("{}", HELP);
+            int.log_msg(format!("{}", HELP));
             (model.clone(), conf.clone())
         },
 

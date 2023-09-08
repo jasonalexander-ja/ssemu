@@ -1,6 +1,6 @@
 use baby_emulator::core::BabyModel;
-use colored::Colorize;
 use crate::args::{Run, Registers};
+use crate::interface::Interface;
 use super::utils::{parse_register, parse_memory_value, parse_instruction, parse_memory_address};
 
 
@@ -13,10 +13,6 @@ debug-regs +/- accumulator/instruction/instructionaddress - Add/remove a registe
 help - Print this help message. 
 ";
 
-
-fn show_yellow_error(msg: &str) {
-    println!("{}", msg.yellow())
-}
 
 fn set_instruction_reg(value: &String, address: bool, model: &BabyModel) -> Result<BabyModel, String> {
     let value = value.trim();
@@ -161,36 +157,36 @@ fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String
     return Ok(model)
 }
 
-fn parse_set_config(command: &str, conf: &Run) -> Result<Run, String> {
+fn parse_set_config(command: &str, conf: &Run, int: &impl Interface) -> Result<Run, String> {
     let next_com = command.split(" ").next();
     let model = match &next_com {
         Some("debug-addrs") => set_debug_address(command.replace("debug-addrs", ""), conf).map_err(|e| e)?,
         Some("break-addrs") => set_break_address(command.replace("break-addrs", ""), conf).map_err(|e| e)?,
         Some("debug-regs") => set_debug_regs(command.replace("debug-regs", ""), conf).map_err(|e| e)?,
-        Some("") | Some("help") => { println!("{}", SET_HELP_MSG); conf.clone() },
+        Some("") | Some("help") => { int.log_msg(format!("{}", SET_HELP_MSG)); conf.clone() },
         _ => return Err(format!("No recognised set command `{}`.", command))
     };
     return Ok(model)
 }
 
-pub fn parse_set_command(command: String, conf: &Run, model: &BabyModel) -> Result<(BabyModel, Run), String> {
+pub fn parse_set_command(command: String, conf: &Run, model: &BabyModel, int: &impl Interface) -> Result<(BabyModel, Run), String> {
     let command = command.trim();
     match parse_set_model(command, model) {
         Ok(m) => return Ok((m, conf.clone())),
         Err(e) => e
     };
-    match parse_set_config(command, conf) {
+    match parse_set_config(command, conf, int) {
         Ok(m) => return Ok((model.clone(), m.clone())),
         Err(e) => e
     };
     return Err(format!("No such option as `{}`. ", command));
 }
 
-pub fn modify(command: String, conf: &Run, model: &BabyModel) -> (BabyModel, Run) {
-    match parse_set_command(command, conf, model) {
+pub fn modify(command: String, conf: &Run, model: &BabyModel, int: &impl Interface) -> (BabyModel, Run) {
+    match parse_set_command(command, conf, model, int) {
         Ok(v) => v,
         Err(e) => {
-            show_yellow_error(e.as_str());
+            int.log_warn(e);
             (model.clone(), conf.clone())
         }
     }
