@@ -1,6 +1,6 @@
 # SSEM Emulator 
 
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENCE)
 
 This is a CLI tool for running emulations of the Manchester 
 Small-Scale Experimental Machine "Baby", the worlds first stored
