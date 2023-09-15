@@ -5,6 +5,7 @@ use crate::run::output::{output_model, output_all_registers, output_all_memory};
 use crate::interface::Interface;
 
 
+/// The help message for a list printing commands. 
 const PRINT_HELP: &str = 
 "Possible commands:
 reg accumulator/instruction/instructionaddress - Outputs the registers
@@ -17,6 +18,15 @@ help - Print this help command
 ";
 
 
+/// Prints the model's registers based on a command string. 
+/// 
+/// Prints an error message if no register command is found. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being printed. 
+/// * `model` - The model to be read. 
+/// * `int` - The interface to print messages. 
+/// 
 fn show_registers(regs: String, model: &BabyModel, int: &impl Interface) {
     let regs = regs.trim().to_owned();
     if regs.is_empty() {
@@ -29,6 +39,15 @@ fn show_registers(regs: String, model: &BabyModel, int: &impl Interface) {
     }
 }
 
+/// Prints the model's memory addresses based on a command string. 
+/// 
+/// Prints an error message if command parsing fails. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being printed. 
+/// * `model` - The model to be read. 
+/// * `int` - The interface to print messages. 
+/// 
 fn show_memory_addresses(addrs: String, model: &BabyModel, int: &impl Interface) {
     let addrs = addrs.trim().to_owned();
     if addrs.is_empty() {
@@ -41,6 +60,12 @@ fn show_memory_addresses(addrs: String, model: &BabyModel, int: &impl Interface)
     }
 }
 
+/// Prints a formatted list of memory address locations. 
+/// 
+/// # Parameters 
+/// * `addrs` - The addresses to be printed. 
+/// * `int` - The interface to print messages. 
+/// 
 fn print_addresses(addrs: &Vec<usize>, int: &impl Interface) {
     let addresses = addrs.iter()
         .map(|v| format!("{:#04x}", v))
@@ -49,14 +74,31 @@ fn print_addresses(addrs: &Vec<usize>, int: &impl Interface) {
     int.log_msg(addresses);
 }
 
-fn print_registers(addrs: &Vec<Registers>, int: &impl Interface) {
-    let regs = addrs.iter()
+/// Prints a formatted list of register names. 
+/// 
+/// # Parameters 
+/// * `regs` - The registers to be printed. 
+/// * `int` - The interface to print messages. 
+/// 
+fn print_registers(regs: &Vec<Registers>, int: &impl Interface) {
+    let regs = regs.iter()
         .map(|v| format!("{:?}", v))
         .collect::<Vec<String>>()
         .join(", ");
     int.log_msg(regs);
 }
 
+/// Prints different parts of the model and run configuration based on a 
+/// command string. 
+/// 
+/// Prints an error message if no matching command is found. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being printed. 
+/// * `model` - The model to be read. 
+/// * `conf` - The configuration model to be read. 
+/// * `int` - The interface to print messages. 
+/// 
 pub fn print(command: String, conf: &Run, model: &BabyModel, int: &impl Interface) {
     let command = command.trim();
     match command.split(" ").next() {

@@ -4,6 +4,7 @@ use crate::interface::Interface;
 use super::utils::{parse_register, parse_memory_value, parse_instruction, parse_memory_address};
 
 
+/// The help message printed for a list of set commands. 
 const SET_HELP_MSG: &str = 
 "reg accumulator/instruction/instructionaddress 0x10 - Set a register to a given value. 
 mem 0x10 0x10 - Set a memory location to a given value (address value). 
@@ -14,7 +15,18 @@ help - Print this help message.
 ";
 
 
-fn set_instruction_reg(value: &String, address: bool, model: &BabyModel) -> Result<BabyModel, String> {
+/// Sets the intruction/address register of the passed model to the value to be parsed. 
+/// 
+/// # Parameters
+/// * `value` - The value to be parsed. 
+/// * `address` - Whether to set the address register (true) or the instruction register. 
+/// * `model` - The model to be acted upon. 
+/// 
+/// # Returns
+/// * [Ok(BabyModel)] - If the parsing and setting has happened correctly. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
+pub fn set_instruction_reg(value: &String, address: bool, model: &BabyModel) -> Result<BabyModel, String> {
     let value = value.trim();
     let value = parse_instruction(value).map_err(|e| format!("Invalid value: `{}`. ", e))?;
     Ok(BabyModel {
@@ -25,6 +37,16 @@ fn set_instruction_reg(value: &String, address: bool, model: &BabyModel) -> Resu
     })
 }
 
+/// Sets the accumulator to a parsed value. 
+/// 
+/// # Parameters 
+/// * `value` - The string value to be parsed. 
+/// * `model` - The model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn set_accumulator(value: &String, model: &BabyModel) -> Result<BabyModel, String> {
     let value = value.trim();
     let value = parse_memory_value(value).map_err(|e| format!("Invalid value: `{}`. ", e))?;
@@ -36,6 +58,16 @@ fn set_accumulator(value: &String, model: &BabyModel) -> Result<BabyModel, Strin
     })
 }
 
+/// Sets a given register from parsing a command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command containing the register and the value to set it to. 
+/// * `model` - The model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn set_register(command: String, model: &BabyModel) -> Result<BabyModel, String> {
     let command: Vec<String> = command.trim()
         .split(" ")
@@ -55,6 +87,16 @@ fn set_register(command: String, model: &BabyModel) -> Result<BabyModel, String>
 
 }
 
+/// Sets a given memory address to a given value from a parsed command string. 
+/// 
+/// # Parameters 
+/// * `command` - The string command containing the memory location and the value to set it to. 
+/// * `model` - The model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn set_memory_address(command: String, model: &BabyModel) -> Result<BabyModel, String> {
     let command: Vec<String> = command.trim()
         .split(" ")
@@ -75,6 +117,15 @@ fn set_memory_address(command: String, model: &BabyModel) -> Result<BabyModel, S
     })
 }
 
+/// Helper function, removes a value from an array if it's present. 
+/// 
+/// # Parameters
+/// * `value` - The value to be removed. 
+/// * `vals` - The vector to be acted upon. 
+/// 
+/// # Returns 
+/// A vec without the given value. 
+/// 
 fn remove_if_present<T: PartialEq>(value: T, vals: Vec<T>) -> Vec<T> {
     if vals.contains(&value) { vals }
     else {
@@ -82,7 +133,16 @@ fn remove_if_present<T: PartialEq>(value: T, vals: Vec<T>) -> Vec<T> {
     }
 }
 
-fn add_if_present<T: PartialEq + Clone>(value: T, vals: Vec<T>) -> Vec<T> {
+/// Helper function, adds a value from an array if it's present. 
+/// 
+/// # Parameters
+/// * `value` - The value to be added. 
+/// * `vals` - The vector to be acted upon. 
+/// 
+/// # Returns 
+/// A vec with the given value. 
+/// 
+fn add_if_not_present<T: PartialEq + Clone>(value: T, vals: Vec<T>) -> Vec<T> {
     if vals.contains(&value) { vals }
     else {
         let mut vals = vals.clone();
@@ -91,14 +151,35 @@ fn add_if_present<T: PartialEq + Clone>(value: T, vals: Vec<T>) -> Vec<T> {
     }
 }
 
+/// Adds or removes a value from a vector depending on a string command. 
+/// 
+/// # Parameters
+/// * `action` - The string command, either "+" or "-" for add/remove. 
+/// * `value` - The value to be added/removed. 
+/// * `vals` - The vec to be acted upon. 
+/// 
+/// # Return 
+/// * [Ok(Vec<T>)] - If sucessfully parsed the command string. 
+/// * [Err(String)] - If there was an error parsing the command string, contains an error message. 
+/// 
 fn add_or_remove<T: PartialEq + Clone>(action: &String, value: T, vals: Vec<T>) -> Result<Vec<T>, String> {
     match action.as_str() {
-        "+" => Ok(add_if_present(value, vals)),
+        "+" => Ok(add_if_not_present(value, vals)),
         "-" => Ok(remove_if_present(value, vals)),
         v => return Err(format!("Invalid action `{}`, actions must be add (+) or remove (-)", v))
     }
 }
 
+/// Adds or removes an address to print upon debugging from a string command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command containing the memory location and whether to add or remove. 
+/// * `conf` - The configuration model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(Run)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn set_debug_address(command: String, conf: &Run) -> Result<Run, String> {
     let command: Vec<String> = command.trim()
         .split(" ")
@@ -115,6 +196,18 @@ fn set_debug_address(command: String, conf: &Run) -> Result<Run, String> {
     Ok(conf)
 }
 
+
+/// Adds or removes an address to break into debug when hit, 
+/// parsed from a string command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command containing the memory location and whether to add or remove. 
+/// * `conf` - The configuration model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(Run)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn set_break_address(command: String, conf: &Run) -> Result<Run, String> {
     let command: Vec<String> = command.trim()
         .split(" ")
@@ -131,6 +224,16 @@ fn set_break_address(command: String, conf: &Run) -> Result<Run, String> {
     Ok(conf)
 }
 
+/// Adds or removes a register to print upon debugging from a string command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command containing the register and whether to add or remove. 
+/// * `conf` - The configuration model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(Run)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn set_debug_regs(command: String, conf: &Run) -> Result<Run, String> {
     let command: Vec<String> = command.trim()
         .split(" ")
@@ -147,6 +250,17 @@ fn set_debug_regs(command: String, conf: &Run) -> Result<Run, String> {
     Ok(conf)
 }
 
+/// Checks to see if a set command is for the emulation model and dispatches the 
+/// relevant set command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being set (either "reg" or "mem"). 
+/// * `model` - The model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String> {
     let next_com = command.split(" ").next();
     let model = match &next_com {
@@ -157,6 +271,17 @@ fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String
     return Ok(model)
 }
 
+/// Checks to see if a set command is for the run configuration model and dispatches the 
+/// relevant set command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being set. 
+/// * `conf` - The configuration model to be acted upon. 
+/// 
+/// # Returns 
+/// * [Ok(Run)] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
 fn parse_set_config(command: &str, conf: &Run, int: &impl Interface) -> Result<Run, String> {
     let next_com = command.split(" ").next();
     let model = match &next_com {
@@ -169,7 +294,24 @@ fn parse_set_config(command: &str, conf: &Run, int: &impl Interface) -> Result<R
     return Ok(model)
 }
 
-pub fn parse_set_command(command: String, conf: &Run, model: &BabyModel, int: &impl Interface) -> Result<(BabyModel, Run), String> {
+/// Parses a set command, tries to dispatch the relevant command. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being set. 
+/// * `model` - The model to be acted upon. 
+/// * `conf` - The configuration model to be acted upon. 
+/// * `int` - The interface to print help messages. 
+/// 
+/// # Returns 
+/// * [Ok((BabyModel, Run))] - If the parsing and setting suceeded. 
+/// * [Err(String)] - If the parsing failed, contains an error message. 
+/// 
+pub fn parse_set_command(
+    command: String, 
+    conf: &Run, 
+    model: &BabyModel, 
+    int: &impl Interface
+) -> Result<(BabyModel, Run), String> {
     let command = command.trim();
     match parse_set_model(command, model) {
         Ok(m) => return Ok((m, conf.clone())),
@@ -182,6 +324,18 @@ pub fn parse_set_command(command: String, conf: &Run, model: &BabyModel, int: &i
     return Err(format!("No such option as `{}`. ", command));
 }
 
+/// Parses a set command, tries to dispatch the relevant command, prints 
+/// help messages and erros if failed.
+/// 
+/// Returns the updated model and configuration, will be the same if 
+/// parsing failed.  
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being set. 
+/// * `model` - The model to be acted upon. 
+/// * `conf` - The configuration model to be acted upon. 
+/// * `int` - The interface to print messages. 
+/// 
 pub fn modify(command: String, conf: &Run, model: &BabyModel, int: &impl Interface) -> (BabyModel, Run) {
     match parse_set_command(command, conf, model, int) {
         Ok(v) => v,

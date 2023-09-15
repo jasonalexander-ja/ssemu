@@ -1,14 +1,29 @@
 use std::path::PathBuf;
-use std::fs;
 use baby_emulator::core::{MEMORY_WORDS, instructions::BabyInstruction};
 use baby_emulator::assembler::assemble;
 use super::ProgramStack;
 use super::errors::{SrcFileErrors, RunErrors};
 use crate::args::{Run, ExecuteFrom};
+use crate::interface::Interface;
 
 
-fn get_src_from_asm(source: &PathBuf, og_notation: bool) -> Result<ProgramStack, SrcFileErrors> {
-    let asm = fs::read_to_string(source)
+/// Reads a file from the interface and attempts to assemble it into a program stack. 
+/// 
+/// # Parameters 
+/// * `source` - The source asm file. 
+/// * `og_notation` - Whether to use original asm notation for assembling. 
+/// * `interface` - The interface to be used to read the asm source file. 
+/// 
+/// # Returns 
+/// * [Ok(ProgramStack)] - The successfully assembled program. 
+/// * [Err(SrcFileErrors)] - An error details. 
+/// 
+fn get_src_from_asm(
+    source: &PathBuf, 
+    og_notation: bool, 
+    interface: &impl Interface
+) -> Result<ProgramStack, SrcFileErrors> {
+    let asm = interface.read_fs_string(source)
         .map_err(|_| SrcFileErrors::CouldntOpenFile(source.clone()))?;
 
     let res = assemble(&asm, og_notation)
@@ -17,8 +32,18 @@ fn get_src_from_asm(source: &PathBuf, og_notation: bool) -> Result<ProgramStack,
     Ok(BabyInstruction::to_numbers(res))
 }
 
-fn from_bin(source: &PathBuf) -> Result<ProgramStack, SrcFileErrors> {
-    let raw = fs::read(source)
+/// Reads a binary file from the interface and attempts to fit it into a program stack. 
+/// 
+/// # Parameters 
+/// * `source` - The binary file source. 
+/// * `interface` - The interface to be used to read the binary source file. 
+/// 
+/// # Returns 
+/// * [Ok(ProgramStack)] - The successfully read program. 
+/// * [Err(SrcFileErrors)] - An error details. 
+/// 
+fn from_bin(source: &PathBuf, interface: &impl Interface) -> Result<ProgramStack, SrcFileErrors> {
+    let raw = interface.read_fs_bytes(source)
         .map_err(|_| SrcFileErrors::CouldntOpenFile(source.clone()))?;
 
     if raw.len() != MEMORY_WORDS * 4 {
@@ -32,11 +57,18 @@ fn from_bin(source: &PathBuf) -> Result<ProgramStack, SrcFileErrors> {
     Ok(res)
 }
 
-pub fn get_src(config: &Run) -> Result<ProgramStack, RunErrors> {
+/// Attempts to get the program source based on the configuration and 
+/// a given file system interface. 
+/// 
+/// # Parameters 
+/// * `config` - The configuration to use. 
+/// * `interface` - The interface to use. 
+/// 
+pub fn get_src(config: &Run, interface: &impl Interface) -> Result<ProgramStack, RunErrors> {
     match config.exe_from {
-        ExecuteFrom::Asm => get_src_from_asm(&config.src, config.og_notation)
+        ExecuteFrom::Asm => get_src_from_asm(&config.src, config.og_notation, interface)
             .map_err(|e| RunErrors::SrcFileError(e)),
-        ExecuteFrom::Bin => from_bin(&config.src)
+        ExecuteFrom::Bin => from_bin(&config.src, interface)
             .map_err(|e| RunErrors::SrcFileError(e)),
     }
 }

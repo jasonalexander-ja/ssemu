@@ -6,6 +6,7 @@ use super::print_debug::print;
 use super::modify::modify;
 
 
+/// A help messages for a list of debug commands. 
 const HELP: &str = 
 "Possible commands:
 print - Print the value of a register or memory location(s). 
@@ -14,6 +15,17 @@ end - End execution.
 help - Print this help command
 ";
 
+
+/// Finds a matching debug command and dispatches the relevant actions. 
+/// 
+/// Returns the model and configuration containing any changes. 
+/// 
+/// # Parameters 
+/// * `command` - The string command stating what is being set. 
+/// * `model` - The model to be acted upon. 
+/// * `conf` - The configuration model to be acted upon. 
+/// * `int` - The interface to print messages. 
+/// 
 pub fn match_debug_command(
     command: String, 
     conf: &Run, 

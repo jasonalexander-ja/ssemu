@@ -2,12 +2,17 @@ use std::path::PathBuf;
 use baby_emulator::assembler::errors::AssemblyError;
 
 
+/// Defines common behaviour for errors thrown during assembling. 
 pub trait AsmError {
+    /// Gets a helper string describing an error. 
     fn describe(&self) -> String;
 }
 
+/// Possible errors when accessing a file. 
 pub enum SrcFileErrors {
+    /// Failed to read from a file. 
     CouldntOpenFile(PathBuf),
+    /// Failed to write to a file. 
     CouldNotWriteToFile(PathBuf),
 }
 
@@ -22,8 +27,11 @@ impl AsmError for SrcFileErrors {
     }
 }
 
+/// Possible errors thrown during assembling a source file. 
 pub enum AsmErrors {
+    /// Error accessing a file. 
     SrcFileError(SrcFileErrors),
+    /// Error assembling. 
     AssembleError(AssemblyError)
 }
 
