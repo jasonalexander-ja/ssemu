@@ -2,7 +2,7 @@ use baby_emulator::core::BabyModel;
 use baby_emulator::core::instructions::BabyInstruction;
 use crate::args::Run;
 use crate::interface::Interface;
-use super::print_debug::print;
+use super::print::print;
 use super::modify::modify;
 
 

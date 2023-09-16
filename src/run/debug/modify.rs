@@ -5,7 +5,7 @@ use super::utils::{parse_register, parse_memory_value, parse_instruction, parse_
 
 
 /// The help message printed for a list of set commands. 
-const SET_HELP_MSG: &str = 
+pub const SET_HELP_MSG: &str = 
 "reg accumulator/instruction/instructionaddress 0x10 - Set a register to a given value. 
 mem 0x10 0x10 - Set a memory location to a given value (address value). 
 debug-addrs +/- 0x10 - Add/remove a memory address to print on debug. 
@@ -47,7 +47,7 @@ pub fn set_instruction_reg(value: &String, address: bool, model: &BabyModel) -> 
 /// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn set_accumulator(value: &String, model: &BabyModel) -> Result<BabyModel, String> {
+pub fn set_accumulator(value: &String, model: &BabyModel) -> Result<BabyModel, String> {
     let value = value.trim();
     let value = parse_memory_value(value).map_err(|e| format!("Invalid value: `{}`. ", e))?;
     Ok(BabyModel {
@@ -68,23 +68,21 @@ fn set_accumulator(value: &String, model: &BabyModel) -> Result<BabyModel, Strin
 /// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn set_register(command: String, model: &BabyModel) -> Result<BabyModel, String> {
-    let command: Vec<String> = command.trim()
-        .split(" ")
-        .map(|v| v.trim().to_owned())
-        .collect();
-    let (register, value) = 
-        if let (Some(r), Some(v)) = (command.get(0), command.get(1)) { (r, v) }
-        else {
-            return Err(format!("Please specify a register and a value. "));
-        };
-    let register = parse_register(&register).map_err(|_| format!("No such register `{}`", register))?;
-    match register {
-        Registers::Accumulator => set_accumulator(value, model),
-        Registers::Instruction => set_instruction_reg(value, false, model),
-        Registers::InstructionAddress => set_instruction_reg(value, true, model),
-    }
+pub fn set_register(command: String, model: &BabyModel) -> Result<BabyModel, String> {
+    let command = command.trim();
 
+    let index = if let Some(v) = command.find(" ") { v }
+    else { return Err(format!("Please specify a register and a value. ")); };
+
+    let (register, value) = command.split_at(index);
+
+    let register = parse_register(&register)
+        .map_err(|_| format!("No such register `{}`", register))?;
+    match register {
+        Registers::Accumulator => set_accumulator(&value.to_owned(), model),
+        Registers::Instruction => set_instruction_reg(&value.to_owned(), false, model),
+        Registers::InstructionAddress => set_instruction_reg(&value.to_owned(), true, model),
+    }
 }
 
 /// Sets a given memory address to a given value from a parsed command string. 
@@ -97,16 +95,19 @@ fn set_register(command: String, model: &BabyModel) -> Result<BabyModel, String>
 /// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn set_memory_address(command: String, model: &BabyModel) -> Result<BabyModel, String> {
-    let command: Vec<String> = command.trim()
-        .split(" ")
-        .map(|v| v.trim().to_owned())
-        .collect();
-    let (address, value) = 
-        if let (Some(r), Some(v)) = (command.get(0), command.get(1)) { (r, v) }
-        else { return Err("Please specify a register and a value. ".to_owned()); };
-    let address = parse_memory_address(&address).map_err(|e| format!("Invalid memory address `{}`. ", e))?;
-    let value = parse_memory_value(&value).map_err(|e| format!("Invalid value: `{}`. ", e))?;
+pub fn set_memory_address(command: String, model: &BabyModel) -> Result<BabyModel, String> {
+    let command = command.trim();
+
+    let index = if let Some(v) = command.find(" ") { v }
+    else { return Err(format!("Please specify a memory address and a value. ")); };
+
+    let (address, value) = command.split_at(index);
+
+    let address = parse_memory_address(&address)
+        .map_err(|e| format!("Invalid memory address: `{}`. ", e))?;
+    let value = parse_memory_value(&value)
+        .map_err(|e| format!("Invalid value: `{}`. ", e))?;
+
     let mut main_store = model.main_store.clone();
     main_store[address] = value;
     Ok(BabyModel {
@@ -126,8 +127,8 @@ fn set_memory_address(command: String, model: &BabyModel) -> Result<BabyModel, S
 /// # Returns 
 /// A vec without the given value. 
 /// 
-fn remove_if_present<T: PartialEq>(value: T, vals: Vec<T>) -> Vec<T> {
-    if vals.contains(&value) { vals }
+pub fn remove_if_present<T: PartialEq>(value: T, vals: Vec<T>) -> Vec<T> {
+    if !vals.contains(&value) { vals }
     else {
         vals.into_iter().filter(|v| *v != value).collect()
     }
@@ -142,7 +143,7 @@ fn remove_if_present<T: PartialEq>(value: T, vals: Vec<T>) -> Vec<T> {
 /// # Returns 
 /// A vec with the given value. 
 /// 
-fn add_if_not_present<T: PartialEq + Clone>(value: T, vals: Vec<T>) -> Vec<T> {
+pub fn add_if_not_present<T: PartialEq + Clone>(value: T, vals: Vec<T>) -> Vec<T> {
     if vals.contains(&value) { vals }
     else {
         let mut vals = vals.clone();
@@ -162,7 +163,7 @@ fn add_if_not_present<T: PartialEq + Clone>(value: T, vals: Vec<T>) -> Vec<T> {
 /// * [Ok(Vec<T>)] - If sucessfully parsed the command string. 
 /// * [Err(String)] - If there was an error parsing the command string, contains an error message. 
 /// 
-fn add_or_remove<T: PartialEq + Clone>(action: &String, value: T, vals: Vec<T>) -> Result<Vec<T>, String> {
+pub fn add_or_remove<T: PartialEq + Clone>(action: &String, value: T, vals: Vec<T>) -> Result<Vec<T>, String> {
     match action.as_str() {
         "+" => Ok(add_if_not_present(value, vals)),
         "-" => Ok(remove_if_present(value, vals)),
@@ -180,22 +181,20 @@ fn add_or_remove<T: PartialEq + Clone>(action: &String, value: T, vals: Vec<T>) 
 /// * [Ok(Run)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn set_debug_address(command: String, conf: &Run) -> Result<Run, String> {
-    let command: Vec<String> = command.trim()
-        .split(" ")
-        .map(|v| v.trim().to_owned())
-        .collect();
-    let (action, value) = 
-        if let (Some(r), Some(v)) = (command.get(0), command.get(1)) { (r, v) }
-        else { return Err("Please specify an action (either -/+) and an address. ".to_owned()); };
+pub fn set_debug_address(command: String, conf: &Run) -> Result<Run, String> {
+    let command = command.trim();
+
+    let index = if let Some(v) = command.find(" ") { v }
+    else { return Err("Please specify an action (either -/+) and an address. ".to_owned()); };
+
+    let (action, value) = command.split_at(index);
 
     let address = parse_memory_address(&value).map_err(|e| format!("Invalid memory address `{}`. ", e))?;
-    let output_addr = add_or_remove(action, address, conf.output_addr.clone()).map_err(|e| e)?;
+    let output_addr = add_or_remove(&action.to_owned(), address, conf.output_addr.clone()).map_err(|e| e)?;
     let mut conf = conf.clone();
     conf.output_addr = output_addr;
     Ok(conf)
 }
-
 
 /// Adds or removes an address to break into debug when hit, 
 /// parsed from a string command. 
@@ -208,17 +207,16 @@ fn set_debug_address(command: String, conf: &Run) -> Result<Run, String> {
 /// * [Ok(Run)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn set_break_address(command: String, conf: &Run) -> Result<Run, String> {
-    let command: Vec<String> = command.trim()
-        .split(" ")
-        .map(|v| v.trim().to_owned())
-        .collect();
-    let (action, value) = 
-        if let (Some(r), Some(v)) = (command.get(0), command.get(1)) { (r, v) }
-        else { return Err("Please specify an action (either -/+) and an address. ".to_owned()); };
+pub fn set_break_address(command: String, conf: &Run) -> Result<Run, String> {
+    let command = command.trim();
+
+    let index = if let Some(v) = command.find(" ") { v }
+    else { return Err("Please specify an action (either -/+) and an address. ".to_owned()); };
+
+    let (action, value) = command.split_at(index);
         
     let address = parse_memory_address(&value).map_err(|e| format!("Invalid memory address `{}`. ", e))?;
-    let break_addr = add_or_remove(action, address, conf.break_addr.clone()).map_err(|e| e)?;
+    let break_addr = add_or_remove(&action.to_owned(), address, conf.break_addr.clone()).map_err(|e| e)?;
     let mut conf = conf.clone();
     conf.break_addr = break_addr;
     Ok(conf)
@@ -234,17 +232,16 @@ fn set_break_address(command: String, conf: &Run) -> Result<Run, String> {
 /// * [Ok(Run)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn set_debug_regs(command: String, conf: &Run) -> Result<Run, String> {
-    let command: Vec<String> = command.trim()
-        .split(" ")
-        .map(|v| v.trim().to_owned())
-        .collect();
-    let (action, value) = 
-        if let (Some(r), Some(v)) = (command.get(0), command.get(1)) { (r, v) }
-        else { return Err("Please specify an action (either -/+) and an address. ".to_owned()); };
+pub fn set_debug_regs(command: String, conf: &Run) -> Result<Run, String> {
+    let command = command.trim();
+
+    let index = if let Some(v) = command.find(" ") { v }
+    else { return Err("Please specify an action (either -/+) and an address. ".to_owned()); };
+
+    let (action, value) = command.split_at(index);
 
     let register = parse_register(&value).map_err(|e| format!("Invalid register name `{}`. ", e))?;
-    let output_regs = add_or_remove(action, register, conf.output_regs.clone()).map_err(|e| e)?;
+    let output_regs = add_or_remove(&action.to_owned(), register, conf.output_regs.clone()).map_err(|e| e)?;
     let mut conf = conf.clone();
     conf.output_regs = output_regs;
     Ok(conf)
@@ -261,14 +258,16 @@ fn set_debug_regs(command: String, conf: &Run) -> Result<Run, String> {
 /// * [Ok(BabyModel)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String> {
-    let next_com = command.split(" ").next();
-    let model = match &next_com {
-        Some("reg") => set_register(command.replace("reg", ""), model).map_err(|e| e)?,
-        Some("mem") => set_memory_address(command.replace("mem", ""), model).map_err(|e| e)?,
+pub fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String> {
+    let command = command.trim();
+    let (next_com, _) = command.split_at(command.find(" ").unwrap_or(command.len() - 1));
+    let next_com = next_com.trim();
+    let model = match next_com {
+        "reg" => set_register(command.replace("reg", ""), model).map_err(|e| e)?,
+        "mem" => set_memory_address(command.replace("mem", ""), model).map_err(|e| e)?,
         _ => return Err(format!("No such option. "))
     };
-    return Ok(model)
+    return Ok(model);
 }
 
 /// Checks to see if a set command is for the run configuration model and dispatches the 
@@ -282,13 +281,15 @@ fn parse_set_model(command: &str, model: &BabyModel) -> Result<BabyModel, String
 /// * [Ok(Run)] - If the parsing and setting suceeded. 
 /// * [Err(String)] - If the parsing failed, contains an error message. 
 /// 
-fn parse_set_config(command: &str, conf: &Run, int: &impl Interface) -> Result<Run, String> {
-    let next_com = command.split(" ").next();
-    let model = match &next_com {
-        Some("debug-addrs") => set_debug_address(command.replace("debug-addrs", ""), conf).map_err(|e| e)?,
-        Some("break-addrs") => set_break_address(command.replace("break-addrs", ""), conf).map_err(|e| e)?,
-        Some("debug-regs") => set_debug_regs(command.replace("debug-regs", ""), conf).map_err(|e| e)?,
-        Some("") | Some("help") => { int.log_msg(format!("{}", SET_HELP_MSG)); conf.clone() },
+pub fn parse_set_config(command: &str, conf: &Run, int: &impl Interface) -> Result<Run, String> {
+    let command = command.trim();
+    let (next_com, _) = command.split_at(command.find(" ").unwrap_or(command.len()));
+    let next_com = next_com.trim();
+    let model = match next_com {
+        "debug-addrs" => set_debug_address(command.replace("debug-addrs", ""), conf).map_err(|e| e)?,
+        "break-addrs" => set_break_address(command.replace("break-addrs", ""), conf).map_err(|e| e)?,
+        "debug-regs" => set_debug_regs(command.replace("debug-regs", ""), conf).map_err(|e| e)?,
+        "" | "help" => { int.log_msg(format!("{}", SET_HELP_MSG)); conf.clone() },
         _ => return Err(format!("No recognised set command `{}`.", command))
     };
     return Ok(model)

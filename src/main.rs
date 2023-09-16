@@ -15,8 +15,11 @@ mod interface;
 mod args;
 /// Contains functionality for running a program. 
 mod run;
+#[cfg(test)]
+pub mod test_utils;
 
 
+/// Entrypoint. 
 fn main() {
     let cli = Cli::parse();
     let int = interface::CliInterface();

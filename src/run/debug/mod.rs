@@ -3,12 +3,12 @@ use colored::Colorize;
 use crate::args::Run;
 use crate::interface::Interface;
 use super::output::output_model;
-use debug_commands::match_debug_command;
+use commands::match_debug_command;
 
 /// Contains helpers for parsing/actioning debug commands. 
-pub mod debug_commands;
+pub mod commands;
 /// Contains helpers for parsing/actioning print debug commands. 
-pub mod print_debug;
+pub mod print;
 /// Contains general helpers for debugging. 
 pub mod utils;
 /// Contains helpers for parsing/actioning modifying debug commands. 

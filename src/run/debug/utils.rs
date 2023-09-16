@@ -57,12 +57,13 @@ pub fn parse_registers(input: &str) -> Result<Vec<Registers>, String> {
 /// * [Ok(usize)] - The memory address value. 
 /// * [Err(String)] - A formated error message if the value is incorrect. 
 pub fn parse_memory_address(value: &str) -> Result<usize, String> {
-    let parse_res = match value {
+    let value = value.trim().to_lowercase();
+    let parse_res = match value.clone() {
         v if v.starts_with("0x") => usize::from_str_radix(&v.replace("0x", ""), 16),
         v if v.starts_with("0o") => usize::from_str_radix(&v.replace("0o", ""), 8),
         v if v.starts_with("0b") => usize::from_str_radix(&v.replace("0b", ""), 2),
         v => usize::from_str_radix(&v.replace("0d", ""), 10),
-    }.map_err(|_| value.to_owned())?;
+    }.map_err(|_| value)?;
     if parse_res > MEMORY_WORDS {
         return Err(format!("Value passed output memory address: {parse_res}, Baby memory address space is {MEMORY_WORDS}. "));
     }
@@ -81,12 +82,13 @@ pub fn parse_memory_address(value: &str) -> Result<usize, String> {
 /// * [Ok(i32)] - The memory value. 
 /// * [Err(String)] - A formated error message if the value is incorrect. 
 pub fn parse_memory_value(value: &str) -> Result<i32, String> {
-    let parse_res = match value {
+    let value = value.trim().to_lowercase();
+    let parse_res = match value.clone() {
         v if v.starts_with("0x") => i32::from_str_radix(&v.replace("0x", ""), 16),
         v if v.starts_with("0o") => i32::from_str_radix(&v.replace("0o", ""), 8),
         v if v.starts_with("0b") => i32::from_str_radix(&v.replace("0b", ""), 2),
         v => i32::from_str_radix(&v.replace("0d", ""), 10),
-    }.map_err(|_| value.to_owned())?;
+    }.map_err(|_| value)?;
     Ok(parse_res)
 }
 
@@ -103,12 +105,13 @@ pub fn parse_memory_value(value: &str) -> Result<i32, String> {
 /// * [Err(String)] - A formated error message if the value is incorrect. 
 /// 
 pub fn parse_instruction(value: &str) -> Result<u16, String> {
-    let parse_res = match value {
+    let value = value.trim().to_lowercase();
+    let parse_res = match value.clone() {
         v if v.starts_with("0x") => u16::from_str_radix(&v.replace("0x", ""), 16),
         v if v.starts_with("0o") => u16::from_str_radix(&v.replace("0o", ""), 8),
         v if v.starts_with("0b") => u16::from_str_radix(&v.replace("0b", ""), 2),
         v => u16::from_str_radix(&v.replace("0d", ""), 10),
-    }.map_err(|_| value.to_owned())?;
+    }.map_err(|_| value)?;
     Ok(parse_res)
 }
 
