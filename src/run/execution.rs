@@ -47,7 +47,7 @@ pub fn run_model(conf: Run, stack: ProgramStack, interface: &impl Interface) {
         let (new_model, err_opt) = iterate_model(&model);
         (model, conf) = if should_debug(&new_model, &conf, err_opt) {
             check_debug_session(&new_model, &conf, interface)
-        } else { (model, conf) };
+        } else { (new_model, conf) };
 
         if BabyInstruction::Stop == BabyInstruction::from_number(model.instruction) {
             break;
