@@ -132,7 +132,7 @@ pub fn parse_memory_addresses(addresses: String) -> Result<Vec<usize>, String> {
     let mut addresses: Vec<usize> = vec![];
     for addr in addr_values {
         let res = parse_memory_address(addr)
-            .map_err(|_| format!("Invalid value passed as output memory address `{addr}`. "))?;
+            .map_err(|e| format!("Invalid value passed as output memory address `{e}`. "))?;
         addresses.push(res);
     }
     Ok(addresses)

@@ -9,6 +9,8 @@ use errors::{AsmErrors, SrcFileErrors};
 
 /// Possible error thrown during assembling. 
 pub mod errors;
+#[cfg(test)]
+mod tests;
 
 
 /// Reads a source asm from an interface and assembles it into a program stack. 
@@ -22,7 +24,7 @@ pub mod errors;
 /// * [Ok(ProgramStack)] - The assembles program stack. 
 /// * [Err(AsmErrors)] - There was an error reading the asm source or assembling. 
 /// 
-fn get_src_from_asm(
+pub fn get_src_from_asm(
     source: &PathBuf, 
     og_notation: bool,
     interface: &impl Interface
@@ -36,6 +38,27 @@ fn get_src_from_asm(
     Ok(BabyInstruction::to_numbers(res))
 }
 
+/// Takes an i32 word and bitshifts it into 4 i8s allowing storage in a file. 
+/// 
+/// Such that the lsb is at the back of the i8 vec and msb is at the front. 
+/// 
+/// # Parameters 
+/// * `word` - The value to be formatted. 
+/// 
+pub fn format_word(word: i32) -> Vec<u8> {
+    (0..4).map(|i| (word >> ((3 - i) * 8)) as u8).collect()
+}
+
+/// Takes an array of i38s, formats each one into 4 i8s, and flatmaps 
+/// them into a continuous array for storage in a file. 
+/// 
+/// # Parameters 
+/// * `data` - The data to be formatted. 
+/// 
+pub fn format_data(data: Vec<i32>) -> Vec<u8> {
+    data.into_iter().flat_map(format_word).collect()
+}
+
 /// Formats the program stack as bytes and writes it to an interface. 
 /// 
 /// # Parameters 
@@ -47,7 +70,7 @@ fn get_src_from_asm(
 /// * [Ok(())] - Writing happened successfully. 
 /// * [Err(AsmErrors)] - Error encountered during writing. 
 /// 
-fn write_to_file(
+pub fn write_to_file(
     data: ProgramStack, 
     conf: &Assemble,
     interface: &impl Interface
@@ -57,9 +80,7 @@ fn write_to_file(
         None => PathBuf::from(conf.input.to_string_lossy().to_string() + ".bin")
     };
 
-    let d: Vec<u8> = data.iter().flat_map(|v| {
-        (0..4).map(|i| (v >> ((3 - i) * 8)) as u8).collect::<Vec<u8>>()
-    }).collect();
+    let d = format_data(Vec::from(data));
 
     interface.write_fs_bytes(d, &out)
         .map_err(|_| AsmErrors::SrcFileError(SrcFileErrors::CouldNotWriteToFile(out.clone())))?;

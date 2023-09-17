@@ -7,7 +7,7 @@ use super::modify::modify;
 
 
 /// A help messages for a list of debug commands. 
-const HELP: &str = 
+pub const HELP: &str = 
 "Possible commands:
 print - Print the value of a register or memory location(s). 
 set - Set a memory location, register, or set a breakpoint, or memorylocation/register to print on debug. 
@@ -32,25 +32,30 @@ pub fn match_debug_command(
     model: &BabyModel, 
     int: &impl Interface
 ) -> (BabyModel, Run) {
-    let command = command.trim();
-    match command.split(" ").next() {
-        Some("s") | Some("set") => modify(command.replace("set", ""), conf, model, int),
-        Some("p") | Some("print") => {
+    let command = command.trim().to_lowercase();
+    let (next_com, _) = command.split_at(command.find(" ").unwrap_or(command.len()));
+    let next_com = next_com.trim();
+    match next_com {
+        "s" | "set" => modify(command.replace("set", ""), conf, model, int),
+        "p" | "print" => {
             print(command.replace("print", ""), conf, model, int);
             (model.clone(), conf.clone())
         },
 
-        Some("h") | Some("") | Some("help") => {
+        "h" | "" | "help" => {
             int.log_msg(format!("{}", HELP));
             (model.clone(), conf.clone())
         },
 
-        Some("e") | Some("end") => {
+        "e" | "end" => {
             let mut model = model.clone();
             model.instruction = BabyInstruction::Stop.to_number() as u16;
             (model, conf.clone())
         },
         
-        _ => (model.clone(), conf.clone())
+        _ => {
+            int.log_warn(format!("No such command as `{}`, use help for a list of commands. ", next_com));
+            (model.clone(), conf.clone())
+        }
     }
 }

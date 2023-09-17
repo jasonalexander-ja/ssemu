@@ -33,7 +33,7 @@ fn should_debug(model: &BabyModel, conf: &Run, err_opt: Option<BabyErrors>) -> b
     has_hit_bp || debug_on_err
 }
 
-/// Runs a mode indefinitely until a stop command is encountered. 
+/// Runs a model indefinitely until a stop command is encountered. 
 /// 
 /// # Parameters 
 /// * `conf` - The configuration to run against. 

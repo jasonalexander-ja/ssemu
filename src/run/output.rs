@@ -4,7 +4,6 @@ use crate::args::Registers;
 use crate::interface::Interface;
 
 
-
 /// Outputs a register of a model, formatted, to an interface. 
 /// 
 /// # Parameters 
@@ -12,7 +11,7 @@ use crate::interface::Interface;
 /// * `model` - The model to be read. 
 /// * `int` - The interface to output to. 
 ///  
-fn output_register(regs: &Registers, model: &BabyModel, int: &impl Interface) {
+pub fn output_register(regs: &Registers, model: &BabyModel, int: &impl Interface) {
     match regs {
         Registers::Accumulator => int.log_msg(format!("{:#010x}", model.accumulator)),
         Registers::InstructionAddress => int.log_msg(format!("{:#010x}", model.instruction_address)),

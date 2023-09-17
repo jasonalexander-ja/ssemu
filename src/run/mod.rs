@@ -15,6 +15,8 @@ pub mod output;
 pub mod execution;
 /// Contains helpers for debugging a model. 
 pub mod debug;
+#[cfg(test)]
+mod tests;
 
 
 /// A type helper for a program stack. 
