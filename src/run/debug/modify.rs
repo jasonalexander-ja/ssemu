@@ -6,13 +6,14 @@ use super::utils::{parse_register, parse_memory_value, parse_instruction, parse_
 
 /// The help message printed for a list of set commands. 
 pub const SET_HELP_MSG: &str = 
-"reg accumulator/instruction/instructionaddress 0x10 - Set a register to a given value. 
+"Possible sub-commands:
+
+reg accumulator/instruction/instructionaddress 0x10 - Set a register to a given value. 
 mem 0x10 0x10 - Set a memory location to a given value (address value). 
 debug-addrs +/- 0x10 - Add/remove a memory address to print on debug. 
 break-addrs +/- 0x10 - Add/remove a memory address to debug when hit. 
 debug-regs +/- accumulator/instruction/instructionaddress - Add/remove a register to print on debug. 
-help - Print this help message. 
-";
+h, help - Print this help message. ";
 
 
 /// Sets the intruction/address register of the passed model to the value to be parsed. 
@@ -289,7 +290,7 @@ pub fn parse_set_config(command: &str, conf: &Run, int: &impl Interface) -> Resu
         "debug-addrs" => set_debug_address(command.replace("debug-addrs", ""), conf).map_err(|e| e)?,
         "break-addrs" => set_break_address(command.replace("break-addrs", ""), conf).map_err(|e| e)?,
         "debug-regs" => set_debug_regs(command.replace("debug-regs", ""), conf).map_err(|e| e)?,
-        "" | "help" => { int.log_msg(format!("{}", SET_HELP_MSG)); conf.clone() },
+        "" | "h" | "help" => { int.log_msg(format!("{}", SET_HELP_MSG)); conf.clone() },
         _ => return Err(format!("No recognised set command `{}`.", command))
     };
     return Ok(model)

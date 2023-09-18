@@ -7,15 +7,15 @@ use crate::interface::Interface;
 
 /// The help message for a list printing commands. 
 pub const PRINT_HELP: &str = 
-"Possible commands:
+"Possible sub-commands:
+
 reg accumulator/instruction/instructionaddress - Outputs the registers
 mem 0xA - Output a memory location (max 32, can be hex 0xA, decimal 10, octal 0o12, binary 0b1010)
 all-model - Output the whole model
 debug-addrs - The memory addresses to print upon debugging 
 break-addrs - The memory addresses to enter debuging upon hitting 
 debug-regs - The registers to print upon debugging
-help - Print this help command
-";
+help - Print this help command";
 
 
 /// Prints the model's registers based on a command string. 
@@ -104,14 +104,13 @@ pub fn print(command: String, conf: &Run, model: &BabyModel, int: &impl Interfac
     let (next_com, _) = command.split_at(command.find(" ").unwrap_or(command.len()));
     let next_com = next_com.trim();
     match next_com {
-        "" => output_model(&conf.output_regs, &conf.output_addr, conf.output_model, model, int),
         "reg" => show_registers(command.replace("reg", ""), model, int),
         "mem" => show_memory_addresses(command.replace("mem", ""), model, int),
         "all-model" => output_model(&vec![], &vec![], true, model, int),
         "debug-addrs" => print_addresses(&conf.output_addr, int),
         "break-addrs" => print_addresses(&conf.break_addr, int),
         "debug-regs" => print_registers(&conf.output_regs, int),
-        "h" | "help" => int.log_msg(format!("{}", PRINT_HELP)),
-        _ => int.log_warn(format!("No recognised print command `{}`. \n {}", command, PRINT_HELP))
+        "" | "h" | "help" => int.log_msg(format!("{}", PRINT_HELP)),
+        _ => int.log_warn(format!("No recognised print command `{}`. \n{}", command, PRINT_HELP))
     }
 }

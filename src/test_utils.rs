@@ -34,6 +34,9 @@ impl Interface for TestInterface {
     fn log_msg(&self, msg: String) {
         assert_eq!(self.should_log, msg)
     }
+    fn log_inline(&self, _msg: String) {
+        
+    }
     fn log_warn(&self, msg: String) {
         assert_eq!(self.should_warn, msg)
     }
@@ -91,6 +94,9 @@ impl TestApplyInterface {
 impl Interface for TestApplyInterface {
     fn log_msg(&self, msg: String) {
         (self.should_log)(msg)
+    }
+    fn log_inline(&self, _msg: String) {
+        
     }
     fn log_warn(&self, msg: String) {
         (self.should_warn)(msg)
@@ -164,6 +170,9 @@ impl Interface for TestSucessiveInterface {
     fn log_msg(&self, msg: String) {
         assert_eq!(self.should_log[self.log_count.load(Ordering::Relaxed)], msg);
         self.log_count.fetch_add(1, Ordering::Relaxed);
+    }
+    fn log_inline(&self, _msg: String) {
+        
     }
     fn log_warn(&self, msg: String) {
         assert_eq!(self.should_warn[self.warn_count.load(Ordering::Relaxed)], msg);

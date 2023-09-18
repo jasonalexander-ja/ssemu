@@ -1,5 +1,4 @@
 use baby_emulator::core::BabyModel;
-use baby_emulator::core::instructions::BabyInstruction;
 use crate::args::Run;
 use crate::interface::Interface;
 use super::print::print;
@@ -9,12 +8,13 @@ use super::modify::modify;
 /// A help messages for a list of debug commands. 
 pub const HELP: &str = 
 "Possible commands:
-print - Print the value of a register or memory location(s). 
-set - Set a memory location, register, or set a breakpoint, or memorylocation/register to print on debug. 
-end - End execution. 
-help - Print this help command
-";
 
+p, print - Print the value of a register, memory location(s) (use `print help`). 
+s, set - Set a memory locations, registers, breakpoints, or memorylocation/register to print on debug (use `set help`). 
+n, next - Perform the next instruction and debug. 
+c, continue - Continue execution. 
+e, end - End execution. 
+h, help - Print this help command";
 
 /// Finds a matching debug command and dispatches the relevant actions. 
 /// 
@@ -42,15 +42,9 @@ pub fn match_debug_command(
             (model.clone(), conf.clone())
         },
 
-        "h" | "" | "help" => {
+        "" | "h" | "help" => {
             int.log_msg(format!("{}", HELP));
             (model.clone(), conf.clone())
-        },
-
-        "e" | "end" => {
-            let mut model = model.clone();
-            model.instruction = BabyInstruction::Stop.to_number() as u16;
-            (model, conf.clone())
         },
         
         _ => {

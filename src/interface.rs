@@ -1,5 +1,7 @@
 use std::io;
 use std::fs;
+use std::io::Write;
+use std::io::stdout;
 use std::path::PathBuf;
 use colored::Colorize;
 
@@ -8,6 +10,8 @@ use colored::Colorize;
 pub trait Interface {
     /// Logs a message to the user. 
     fn log_msg(&self, msg: String);
+    /// Logs a message to the user without a linebreak. 
+    fn log_inline(&self, msg: String);
     /// Logs a warning to the user. 
     fn log_warn(&self, msg: String);
     /// Logs an error to the user. 
@@ -28,6 +32,11 @@ pub struct CliInterface();
 impl Interface for CliInterface {
     fn log_msg(&self, msg: String) {
         println!("{}", msg);
+    }
+    #[allow(unused_must_use)]
+    fn log_inline(&self, msg: String) {
+        print!("{}", msg);
+        stdout().flush();
     }
     fn log_warn(&self, msg: String) {
         println!("{}", msg.as_str().yellow());

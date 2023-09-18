@@ -17,6 +17,17 @@ pub mod modify;
 mod tests;
 
 
+/// The result of a debug session, either it will exit, execute a single instruction
+/// or continue. 
+pub enum DebugResult {
+    /// Continue execution. 
+    Continue(BabyModel, Run),
+    /// Perform the next instruction then debug. 
+    SingleStep(BabyModel, Run),
+    /// End execution and exit the emulator. 
+    End(BabyModel, Run)
+}
+
 /// Runs a debug session loop for the user for a givern model and configuration. 
 /// 
 /// Returns the model and config with any changes applied. 
@@ -26,16 +37,26 @@ mod tests;
 /// * `conf` - The configuration model to run against. 
 /// * `int` - The interface used to i/o by the debug session. 
 /// 
-pub fn check_debug_session(model: &BabyModel, conf: &Run, int: &impl Interface) -> (BabyModel, Run) {
+pub fn check_debug_session(model: &BabyModel, conf: &Run, int: &impl Interface) -> DebugResult {
     let (mut model, mut conf) = (model.clone(), conf.clone());
+    int.log_msg(format!("{}", "Debug".cyan()));
+    output_model(&conf.output_regs, &conf.output_addr, conf.output_model, &model, int);
     loop {
-        int.log_msg(format!("{}", "Debug".cyan()));
-        output_model(&conf.output_regs, &conf.output_addr, conf.output_model, &model, int);
-        let line = int.get_line();
-        if line.trim().starts_with("continue") { break; }
-        (model, conf) = match_debug_command(line, &conf, &model, int);
+        int.log_inline(format!("(ssemu-debug) "));
 
+        let line = int.get_line()
+            .to_lowercase()
+            .trim()
+            .to_owned();
+
+        if line.starts_with("continue") || line.starts_with("c") { break; }
+        if line.starts_with("next") || line.starts_with("n") 
+            { return DebugResult::SingleStep(model, conf) } 
+        if line.starts_with("end") || line.starts_with("e") 
+            { return DebugResult::End(model, conf) } 
+
+        (model, conf) = match_debug_command(line, &conf, &model, int);
     }
 
-    (model, conf)
+    DebugResult::Continue(model, conf)
 }

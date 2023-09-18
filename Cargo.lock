@@ -53,9 +53,9 @@ dependencies = [
 
 [[package]]
 name = "baby-emulator"
-version = "0.1.5"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "973b602208f17c07bc0157e0ad97416ee17f8595caa0c180d2a14c7abaef9e0c"
+checksum = "468f103c3d3d4b1bfbe9bc951577e16d2ce1d85df4dceffbafd42e8d3e720208"
 
 [[package]]
 name = "bitflags"
