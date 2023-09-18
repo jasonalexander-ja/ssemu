@@ -38,8 +38,11 @@ fn get_src_from_asm(
 /// the index of the word and returns the generated word. 
 /// 
 pub fn read_word<'a>(raw: &'a Vec<u8>) -> impl Fn(usize) -> i32 + 'a {
-    |i: usize| 
-        (0..4).fold(0, |val, j| val + (*raw.get(i + j).unwrap_or(&0) as i32) << ((3 - j) * 8))
+    |i: usize| (0..4).fold(0, |val, j| {
+        let index = (i * 4) + j;
+        let value = *raw.get(index).unwrap_or(&0) as i32;
+        val | value << ((3 - j) * 8) 
+    })
 }
 
 /// Reads groups of 4 bytes into i32 words. 
