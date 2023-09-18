@@ -18,6 +18,8 @@ cargo install ssemu
 
 # Useage
 
+There is an example repository [here](https://github.com/jasonalexander-ja/SSEMExample). 
+
 ```
 Usage: ssemu <COMMAND>
 
