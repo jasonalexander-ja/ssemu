@@ -32,6 +32,25 @@ fn get_src_from_asm(
     Ok(BabyInstruction::to_numbers(res))
 }
 
+/// Provides a function to read an i32 word from 4 bytes in an array. 
+/// 
+/// Takes an array of the bytes, returning a closure that accepts 
+/// the index of the word and returns the generated word. 
+/// 
+pub fn read_word<'a>(raw: &'a Vec<u8>) -> impl Fn(usize) -> i32 + 'a {
+    |i: usize| 
+        (0..4).fold(0, |val, j| val + (*raw.get(i + j).unwrap_or(&0) as i32) << ((3 - j) * 8))
+}
+
+/// Reads groups of 4 bytes into i32 words. 
+/// 
+/// # Parameters 
+/// * `raw` - The raw bytes. 
+/// 
+pub fn read_words(raw: Vec<u8>) -> [i32; MEMORY_WORDS] {
+    core::array::from_fn(read_word(&raw))
+}
+
 /// Reads a binary file from the interface and attempts to fit it into a program stack. 
 /// 
 /// # Parameters 
@@ -50,9 +69,7 @@ fn from_bin(source: &PathBuf, interface: &impl Interface) -> Result<ProgramStack
         return Err(SrcFileErrors::BinFileWrongLen(raw.len()))
     }
 
-    let res: [i32; MEMORY_WORDS] = core::array::from_fn(|i| 
-        (0..4).fold(0, |val, j| val + (raw[i + j] as i32) << ((3 - j) * 8))
-    );
+    let res = read_words(raw);
 
     Ok(res)
 }

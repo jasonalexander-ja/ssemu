@@ -4,6 +4,7 @@ use crate::args::Run;
 use crate::interface::Interface;
 use super::ProgramStack;
 use super::debug::check_debug_session;
+use super::output::output_model;
 
 /// Iterates a model, returning the updated model plus any error encountered.  
 /// 
@@ -53,4 +54,5 @@ pub fn run_model(conf: Run, stack: ProgramStack, interface: &impl Interface) {
             break;
         }
     }
+    output_model(&conf.output_regs, &conf.output_addr, conf.output_model, &model, interface);
 }
