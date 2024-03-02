@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use baby_emulator::assembler::assemble as asm;
+use baby_emulator::assembler::{assemble as asm, linker::LinkerData};
 use baby_emulator::core::instructions::BabyInstruction;
 use crate::args::Assemble;
 use crate::errors::Errors;
@@ -32,7 +32,7 @@ pub fn get_src_from_asm(
     let a = interface.read_fs_string(source)
         .map_err(|_| AsmErrors::SrcFileError(SrcFileErrors::CouldntOpenFile(source.clone())))?;
 
-    let res = asm(&a, og_notation)
+    let LinkerData(res, _) = asm(&a, og_notation)
         .map_err(|e| AsmErrors::AssembleError(e))?;
 
     Ok(BabyInstruction::to_numbers(res))
