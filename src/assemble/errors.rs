@@ -14,6 +14,8 @@ pub enum SrcFileErrors {
     CouldntOpenFile(PathBuf),
     /// Failed to write to a file. 
     CouldNotWriteToFile(PathBuf),
+    /// Failed to serialise generated tag definitions. 
+    FailedToSerialiseTags(serde_json::Error)
 }
 
 impl AsmError for SrcFileErrors {
@@ -23,6 +25,8 @@ impl AsmError for SrcFileErrors {
                 format!("Couldn't open asm source file: `{}`.", s.to_string_lossy().to_string()),
             SrcFileErrors::CouldNotWriteToFile(s) => 
                 format!("Couldn't write assembled data to file: `{}`.", s.to_string_lossy().to_string()),
+            SrcFileErrors::FailedToSerialiseTags(s) => 
+                format!("Failed to serialise the generated tag definitions with:  `{}`.", s.to_string()),
         }
     }
 }

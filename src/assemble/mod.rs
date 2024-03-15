@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 use baby_emulator::assembler::{assemble as asm, linker::LinkerData};
 use baby_emulator::core::instructions::BabyInstruction;
@@ -28,14 +29,14 @@ pub fn get_src_from_asm(
     source: &PathBuf, 
     og_notation: bool,
     interface: &impl Interface
-) -> Result<ProgramStack, AsmErrors> {
+) -> Result<(ProgramStack, HashMap<String, i32>), AsmErrors> {
     let a = interface.read_fs_string(source)
         .map_err(|_| AsmErrors::SrcFileError(SrcFileErrors::CouldntOpenFile(source.clone())))?;
 
-    let LinkerData(res, _) = asm(&a, og_notation)
+    let LinkerData(res, tags) = asm(&a, og_notation)
         .map_err(|e| AsmErrors::AssembleError(e))?;
 
-    Ok(BabyInstruction::to_numbers(res))
+    Ok((BabyInstruction::to_numbers(res), tags))
 }
 
 /// Takes an i32 word and bitshifts it into 4 i8s allowing storage in a file. 
@@ -87,6 +88,24 @@ pub fn write_to_file(
 
     Ok(())
 }
+pub fn write_tags_to_file(
+    tags: HashMap<String, i32>, 
+    conf: &Assemble,
+    interface: &impl Interface
+) -> Result<(), AsmErrors> {
+    let file_path = match &conf.tags {
+        Some(path) => path,
+        _ => return Ok(())
+    };
+
+    let json =  serde_json::to_string(&tags)
+        .map_err(|e| AsmErrors::SrcFileError(SrcFileErrors::FailedToSerialiseTags(e)))?;
+
+    interface.write_fs_string(json, &file_path)
+        .map_err(|_| AsmErrors::SrcFileError(SrcFileErrors::CouldNotWriteToFile(file_path.clone())))?;
+
+    Ok(())
+}
 
 /// Attempts to read an asm string from an interface, assemble it, and write it back
 /// to an interface. 
@@ -100,10 +119,13 @@ pub fn write_to_file(
 /// * [Err(Errors)] - An error was encountered during assembling/writing. 
 /// 
 pub fn assemble(conf: Assemble, interface: &impl Interface) -> Result<(), Errors> {
-    let bin = get_src_from_asm(&conf.input, conf.og_notation, interface)
+    let (bin, tags) = get_src_from_asm(&conf.input, conf.og_notation, interface)
         .map_err(|e| Errors::AsmError(e))?;
 
     write_to_file(bin, &conf, interface)
+        .map_err(|e| Errors::AsmError(e))?;
+
+    write_tags_to_file(tags, &conf, interface)
         .map_err(|e| Errors::AsmError(e))?;
 
     Ok(())

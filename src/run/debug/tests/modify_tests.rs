@@ -101,7 +101,7 @@ fn test_add_if_present() {
 
 #[test]
 fn test_remove_if_present() {
-    assert_eq!(modify::remove_if_present(5, vec![5]), vec![]);
+    assert_eq!(modify::remove_if_present(5, vec![5]), Vec::<i32>::new());
     assert_eq!(modify::remove_if_present(5, vec![6]), vec![6]);
 }
 

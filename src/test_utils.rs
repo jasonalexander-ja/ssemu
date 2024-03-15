@@ -12,7 +12,9 @@ pub struct TestInterface {
     pub string_files: HashMap<PathBuf, String>,
     pub bin_files: HashMap<PathBuf, Vec<u8>>,
     pub should_write_addr: PathBuf,
-    pub should_write_data: Vec<u8>
+    pub should_write_data: Vec<u8>,
+    pub should_write_str_addr: PathBuf,
+    pub should_write_str_data: String,
 }
 
 impl TestInterface {
@@ -26,6 +28,8 @@ impl TestInterface {
             bin_files: HashMap::new(),
             should_write_addr: PathBuf::new(),
             should_write_data: Vec::new(),
+            should_write_str_addr: PathBuf::new(),
+            should_write_str_data: format!(""),
         }
     }
 }
@@ -52,6 +56,11 @@ impl Interface for TestInterface {
             None => Err(())
         }
     }
+    fn write_fs_string(&self, data: String, out: &PathBuf) -> Result<(), ()> {
+        assert_eq!(self.should_write_str_addr, *out);
+        assert_eq!(self.should_write_str_data, data);
+        Ok(())
+    }
     fn read_fs_bytes(&self, path: &PathBuf) -> Result<Vec<u8>, ()> {
         match self.bin_files.get(path) {
             Some(v) => Ok(v.clone()),
@@ -73,7 +82,9 @@ pub struct TestApplyInterface {
     string_files: HashMap<PathBuf, String>,
     bin_files: HashMap<PathBuf, Vec<u8>>,
     should_write_addr: PathBuf,
-    should_write_data: Vec<u8>
+    should_write_data: Vec<u8>,
+    should_write_str_addr: PathBuf,
+    should_write_str_data: String
 }
 
 impl TestApplyInterface {
@@ -87,6 +98,8 @@ impl TestApplyInterface {
             bin_files: HashMap::new(),
             should_write_addr: PathBuf::new(),
             should_write_data: Vec::new(),
+            should_write_str_addr: PathBuf::new(),
+            should_write_str_data: format!("")
         }
     }
 }
@@ -112,6 +125,11 @@ impl Interface for TestApplyInterface {
             Some(v) => Ok(v.clone()),
             None => Err(())
         }
+    }
+    fn write_fs_string(&self, data: String, out: &PathBuf) -> Result<(), ()> {
+        assert_eq!(self.should_write_str_addr, *out);
+        assert_eq!(self.should_write_str_data, data);
+        Ok(())
     }
     fn read_fs_bytes(&self, path: &PathBuf) -> Result<Vec<u8>, ()> {
         match self.bin_files.get(path) {
@@ -141,7 +159,9 @@ pub struct TestSucessiveInterface {
     pub bin_files: Vec<HashMap<PathBuf, Vec<u8>>>,
     pub write_count: AtomicUsize,
     pub should_write_addr: Vec<PathBuf>,
-    pub should_write_data: Vec<Vec<u8>>
+    pub should_write_data: Vec<Vec<u8>>,
+    pub should_write_str_addr: Vec<PathBuf>,
+    pub should_write_str_data: Vec<String>
 }
 
 impl TestSucessiveInterface {
@@ -162,6 +182,8 @@ impl TestSucessiveInterface {
             write_count: AtomicUsize::new(0),
             should_write_addr: Vec::new(),
             should_write_data: Vec::new(),
+            should_write_str_addr: Vec::new(),
+            should_write_str_data: Vec::new()
         }
     }
 }
@@ -194,6 +216,12 @@ impl Interface for TestSucessiveInterface {
         };
         self.str_file_count.fetch_add(1, Ordering::Relaxed);
         res
+    }
+    fn write_fs_string(&self, data: String, out: &PathBuf) -> Result<(), ()> {
+        assert_eq!(self.should_write_str_addr[self.write_count.load(Ordering::Relaxed)], *out);
+        assert_eq!(self.should_write_str_data[self.write_count.load(Ordering::Relaxed)], data);
+        self.write_count.fetch_add(1, Ordering::Relaxed);
+        Ok(())
     }
     fn read_fs_bytes(&self, path: &PathBuf) -> Result<Vec<u8>, ()> {
         let res = match self.bin_files[self.bin_file_count.load(Ordering::Relaxed)].get(path) {

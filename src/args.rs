@@ -33,6 +33,10 @@ pub struct Assemble {
     /// Use original notation for asm instructions. 
     #[arg(long, default_value_t = false)]
     pub og_notation: bool,
+
+    /// Output the tags definitions. 
+    #[arg(long, short)]
+    pub tags: Option<PathBuf>,
 }
 
 #[derive(Args, Clone)]

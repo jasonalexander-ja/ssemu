@@ -20,6 +20,8 @@ pub trait Interface {
     fn get_line(&self) -> String;
     /// Reads a file to a string. 
     fn read_fs_string(&self, path: &PathBuf) -> Result<String, ()>;
+    /// Writes a string to a file. 
+    fn write_fs_string(&self, data: String, path: &PathBuf) -> Result<(), ()>;
     /// Reads a file to bytes. 
     fn read_fs_bytes(&self, path: &PathBuf) -> Result<Vec<u8>, ()>;
     /// Writes bytes to a file. 
@@ -51,6 +53,10 @@ impl Interface for CliInterface {
     }
     fn read_fs_string(&self, path: &PathBuf) -> Result<String, ()> {
         fs::read_to_string(path)
+            .map_err(|_| ())
+    }
+    fn write_fs_string(&self, data: String, path: &PathBuf) -> Result<(), ()> {
+        fs::write(path, data)
             .map_err(|_| ())
     }
     fn read_fs_bytes(&self, path: &PathBuf) -> Result<Vec<u8>, ()> {
